@@ -1,0 +1,50 @@
+--[[ 
+    SCRIPT Infinite Jump - PHIÊN BẢN MOBILE
+    TÍNH NĂNG: CÓ NÚT BẤM TRÊN MÀN HÌNH ĐỂ ON/OFF
+]]
+
+local ScreenGui = Instance.new("ScreenGui")
+local ToggleButton = Instance.new("TextButton")
+local Corner = Instance.new("UICorner")
+
+-- Cài đặt giao diện nút bấm
+ScreenGui.Parent = game.CoreGui
+ToggleButton.Parent = ScreenGui
+ToggleButton.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+ToggleButton.Position = UDim2.new(0.05, 0, 0.4, 0) -- Vị trí bên trái màn hình
+ToggleButton.Size = UDim2.new(0, 100, 0, 50)
+ToggleButton.Text = "Infinite Jump: ON"
+ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+ToggleButton.Font = Enum.Font.SourceSansBold
+ToggleButton.TextSize = 18
+
+Corner.CornerRadius = UDim.new(0, 8)
+Corner.Parent = ToggleButton
+
+-- Biến điều khiển
+local _G.InfiniteJumpEnabled = true
+local UserInputService = game:GetService("UserInputService")
+
+-- Xử lý khi bấm nút
+ToggleButton.MouseButton1Click:Connect(function()
+    _G.InfiniteJumpEnabled = not _G.InfiniteJumpEnabled
+    if _G.InfiniteJumpEnabled then
+        ToggleButton.Text = "Infinite Jump: ON"
+        ToggleButton.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+    else
+        ToggleButton.Text = "Infinite Jump: OFF"
+        ToggleButton.BackgroundColor3 = Color3.fromRGB(255, 80, 80)
+    end
+end)
+
+-- Xử lý nhảy vô hạn
+UserInputService.JumpRequest:Connect(function()
+    if _G.InfiniteJumpEnabled then
+        local Character = game.Players.LocalPlayer.Character
+        if Character and Character:FindFirstChildOfClass("Humanoid") then
+            Character:FindFirstChildOfClass("Humanoid"):ChangeState(Enum.HumanoidStateType.Jumping)
+        end
+    end
+end)
+
+print(" Script mobile da chay ")
