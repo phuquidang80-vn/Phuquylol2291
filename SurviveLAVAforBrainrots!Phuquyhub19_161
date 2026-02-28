@@ -1,0 +1,187 @@
+--[[
+    PHÚ QUÝ BRAINROT LAVA HUB - OFFICIAL FINAL VERSION (V23)
+    Features: Dual Language, Smart Fix Lag, VIP Unlock, Barrier/Lava Clear, Fixed Teleports.
+]]
+
+local Player = game:GetService("Players").LocalPlayer
+local RunService = game:GetService("RunService")
+local pGui = Player:WaitForChild("PlayerGui")
+
+-- --- DỌN DẸP BẢN CŨ ---
+if pGui:FindFirstChild("PhuQuyOfficial") then pGui["PhuQuyOfficial"]:Destroy() end
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "PhuQuyOfficial"
+ScreenGui.Parent = pGui
+ScreenGui.ResetOnSpawn = false
+
+-- --- BIẾN ĐIỀU KHIỂN ---
+local isEnglish = false
+local isWalking = false
+
+-- --- KHUNG CHÍNH (DESIGN BY PHÚ QUÝ) ---
+local Main = Instance.new("Frame", ScreenGui)
+Main.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
+Main.BorderSizePixel = 0
+Main.Position = UDim2.new(0.5, -95, 0.25, 0)
+Main.Size = UDim2.new(0, 190, 0, 330)
+Main.Draggable = true
+Main.Active = true
+Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 15)
+
+local Stroke = Instance.new("UIStroke", Main)
+Stroke.Color = Color3.fromRGB(255, 215, 0) -- Gold
+Stroke.Thickness = 2
+
+-- TIÊU ĐỀ
+local Title = Instance.new("TextLabel", Main)
+Title.Size = UDim2.new(1, 0, 0, 45)
+Title.BackgroundTransparency = 1
+Title.Text = "PHÚ QUÝ OFFICIAL"
+Title.TextColor3 = Color3.fromRGB(255, 215, 0)
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 15
+
+-- NÚT MỞ MENU (👑 ICON)
+local Toggle = Instance.new("TextButton", ScreenGui)
+Toggle.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+Toggle.Position = UDim2.new(0, 20, 0.5, -30)
+Toggle.Size = UDim2.new(0, 65, 0, 65)
+Toggle.Text = "👑"
+Toggle.TextSize = 35
+Instance.new("UICorner", Toggle).CornerRadius = UDim.new(1, 0)
+local TStroke = Instance.new("UIStroke", Toggle)
+TStroke.Color = Color3.fromRGB(255, 215, 0)
+TStroke.Thickness = 2
+Toggle.MouseButton1Click:Connect(function() Main.Visible = not Main.Visible end)
+
+-- --- HỆ THỐNG TAB ---
+local Page1 = Instance.new("ScrollingFrame", Main) -- HACKS
+local Page2 = Instance.new("ScrollingFrame", Main) -- TELEPORTS
+
+for i, p in pairs({Page1, Page2}) do
+    p.Size = UDim2.new(1, 0, 0.65, 0)
+    p.Position = UDim2.new(0, 0, 0.26, 0)
+    p.BackgroundTransparency = 1
+    p.ScrollBarThickness = 0
+    p.Visible = (i == 1)
+end
+
+local function CreateTabBtn(txtVn, txtEn, x, target, other)
+    local b = Instance.new("TextButton", Main)
+    b.Size = UDim2.new(0.46, 0, 0, 30)
+    b.Position = UDim2.new(x, 0, 0.15, 0)
+    b.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    b.TextColor3 = Color3.fromRGB(255, 255, 255)
+    b.Font = Enum.Font.GothamBold
+    b.TextSize = 11
+    Instance.new("UICorner", b)
+    b.MouseButton1Click:Connect(function() target.Visible = true; other.Visible = false end)
+    RunService.Heartbeat:Connect(function() b.Text = isEnglish and txtEn or txtVn end)
+end
+
+CreateTabBtn("HACK", "HACKS", 0.03, Page1, Page2)
+CreateTabBtn("TELE", "WARP", 0.51, Page2, Page1)
+
+-- --- HÀM TẠO NÚT TIÊU CHUẨN ---
+local function AddBtn(txtVn, txtEn, color, y, parent, func)
+    local b = Instance.new("TextButton", parent)
+    b.Size = UDim2.new(0.9, 0, 0, 34)
+    b.Position = UDim2.new(0.05, 0, 0, y)
+    b.BackgroundColor3 = color
+    b.TextColor3 = Color3.fromRGB(255, 255, 255)
+    b.Font = Enum.Font.GothamBold
+    b.TextSize = 10
+    Instance.new("UICorner", b)
+    b.MouseButton1Click:Connect(function() pcall(func, b) end)
+    RunService.Heartbeat:Connect(function() b.Text = isEnglish and txtEn or txtVn end)
+end
+
+-- --- TAB 1: HACKS & OPTIMIZATION ---
+
+-- 1. XÓA RÀO CHẮN
+AddBtn("🚧 XÓA RÀO CHẮN", "🚧 CLEAR BARRIERS", Color3.fromRGB(140, 140, 0), 0, Page1, function()
+    local b = workspace.GameFolder:FindFirstChild("Barrier")
+    if b then b:ClearAllChildren() end
+end)
+
+-- 2. SMART FIX LAG (Giữ hiệu ứng)
+AddBtn("⚡ TỐI ƯU HÓA PING", "⚡ SMART OPTIMIZE", Color3.fromRGB(0, 120, 0), 45, Page1, function(btn)
+    collectgarbage("collect")
+    btn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    task.wait(1)
+    btn.BackgroundColor3 = Color3.fromRGB(0, 120, 0)
+end)
+
+-- 3. AIR WALK (Nền đỏ sang chảnh)
+local AirPart = Instance.new("Part")
+AirPart.Size = Vector3.new(15, 1, 15); AirPart.Anchored = true; AirPart.Color = Color3.fromRGB(255, 0, 0); AirPart.Transparency = 0.5
+AddBtn("☁️ AIR WALK: TẮT", "☁️ AIR WALK: OFF", Color3.fromRGB(180, 0, 0), 90, Page1, function(btn)
+    isWalking = not isWalking
+    AirPart.Parent = isWalking and workspace or nil
+end)
+
+RunService.RenderStepped:Connect(function()
+    if isWalking and Player.Character and Player.Character:FindFirstChild("HumanoidRootPart") then
+        AirPart.CFrame = Player.Character.HumanoidRootPart.CFrame * CFrame.new(0, -3.5, 0)
+    end
+end)
+
+-- 4. UNLOCK VIP
+AddBtn("🌟 MỞ KHÓA VIP", "🌟 UNLOCK VIP", Color3.fromRGB(255, 140, 0), 135, Page1, function()
+    local vip = workspace.GameFolder:FindFirstChild("VIPDoors")
+    if vip then 
+        for _, d in pairs(vip:GetDescendants()) do 
+            if d:IsA("BasePart") then d.CanCollide = false d.Transparency = 0.7 end 
+        end 
+    end
+end)
+
+-- 5. CLEAR LAVA
+AddBtn("🔥 XÓA LAVA", "🔥 CLEAR LAVA", Color3.fromRGB(120, 0, 0), 180, Page1, function()
+    workspace.GameFolder.Lavas:ClearAllChildren()
+end)
+
+-- --- TAB 2: TELEPORT (FIXED LOCATIONS) ---
+
+-- 1. FUSION AREA
+AddBtn("⚡ SỰ KIỆN MÁY", "⚡ FUSION EVENT", Color3.fromRGB(0, 180, 200), 0, Page2, function()
+    local target = workspace.GameFolder.FusionArea:FindFirstChild("Union")
+    if target then Player.Character.HumanoidRootPart.CFrame = target.CFrame * CFrame.new(0, 5, 0) end
+end)
+
+-- 2. BASE 1
+AddBtn("🏠 BASE 1", "🏠 BASE 1", Color3.fromRGB(0, 100, 200), 45, Page2, function()
+    local target = workspace.CommonMap:GetChildren()[289]
+    if target then Player.Character.HumanoidRootPart.CFrame = target:GetPivot() * CFrame.new(0, 5, 0) end
+end)
+
+-- 3. MOON (FIXED PATH)
+AddBtn("🌙 MẶT TRĂNG", "🌙 MOON", Color3.fromRGB(120, 0, 200), 90, Page2, function()
+    local target = workspace.MoonMap:GetChildren()[21]:GetChildren()[18]
+    if target then Player.Character.HumanoidRootPart.CFrame = target:GetPivot() * CFrame.new(0, 5, 0) end
+end)
+
+-- 4. CELESTIAL (CORRECT SPELLING)
+AddBtn("💎 THIÊN ĐÌNH", "💎 CELESTIAL", Color3.fromRGB(0, 150, 120), 135, Page2, function()
+    local target = workspace.GameFolder.Structures.Celestial.Rock:GetChildren()[12]
+    if target then Player.Character.HumanoidRootPart.CFrame = target:GetPivot() * CFrame.new(0, 5, 0) end
+end)
+
+-- --- NÚT CHUYỂN NGÔN NGỮ (LANGUAGE) ---
+local LangBtn = Instance.new("TextButton", Main)
+LangBtn.Size = UDim2.new(0.9, 0, 0, 30)
+LangBtn.Position = UDim2.new(0.05, 0, 0.89, 0)
+LangBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+LangBtn.Text = "NGÔN NGỮ: VIỆT NAM"
+LangBtn.TextColor3 = Color3.fromRGB(255, 215, 0)
+LangBtn.Font = Enum.Font.GothamBold
+LangBtn.TextSize = 10
+Instance.new("UICorner", LangBtn)
+
+LangBtn.MouseButton1Click:Connect(function()
+    isEnglish = not isEnglish
+    LangBtn.Text = isEnglish and "LANGUAGE: ENGLISH" or "NGÔN NGỮ: VIỆT NAM"
+end)
+
+print("Phu Quy Official V23 Loaded - Enjoy!")
