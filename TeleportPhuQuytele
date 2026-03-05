@@ -1,0 +1,250 @@
+--[[ 
+    PHÚ QUÝ V1 - HEADER EXIT EDITION
+    - Cập nhật: Nút EXIT nằm ngay trên thanh tiêu đề cùng tên menu.
+    - Cập nhật: Nút chuyển trang >> cực lớn.
+    - Full: Shift Lock, Lock GUI, Speed, Noclip, ESP, Teleport.
+]]
+
+local Player = game.Players.LocalPlayer
+local Camera = workspace.CurrentCamera
+local CoreGui = game:GetService("CoreGui")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+
+if CoreGui:FindFirstChild("PhuQuy_V1_HeaderExit") then CoreGui.PhuQuy_V1_HeaderExit:Destroy() end
+
+local ScreenGui = Instance.new("ScreenGui", CoreGui)
+ScreenGui.Name = "PhuQuy_V1_HeaderExit"
+ScreenGui.ResetOnSpawn = false
+
+local teleCount, speedActive, noclipActive, espActive = 1, false, false, false
+local guiLocked, shiftLockActive, isVN = false, false, true
+local savedPositions = {}
+
+-- HÀM KÉO DI CHUYỂN
+local function MakeDraggable(frame)
+    local dragging, dragInput, dragStart, startPos
+    frame.InputBegan:Connect(function(input)
+        if not guiLocked and (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
+            dragging = true dragStart = input.Position startPos = frame.Position
+        end
+    end)
+    UserInputService.InputChanged:Connect(function(input)
+        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            local delta = input.Position - dragStart
+            frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        end
+    end)
+    frame.InputEnded:Connect(function(input) dragging = false end)
+end
+
+-- MENU CHÍNH
+local Main = Instance.new("Frame", ScreenGui)
+Main.Size = UDim2.new(0, 180, 0, 320)
+Main.Position = UDim2.new(0.5, -90, 0.5, -160)
+Main.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
+Main.BackgroundTransparency = 0.2
+Main.Visible = false
+Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 10)
+local M_Stroke = Instance.new("UIStroke", Main)
+M_Stroke.Thickness = 2.5
+MakeDraggable(Main)
+
+-- THANH TIÊU ĐỀ (HEADER)
+local Header = Instance.new("Frame", Main)
+Header.Size = UDim2.new(1, 0, 0, 45)
+Header.BackgroundTransparency = 1
+
+local Title = Instance.new("TextLabel", Header)
+Title.Size = UDim2.new(0.5, 0, 1, 0)
+Title.Position = UDim2.new(0, 10, 0, 0)
+Title.Text = "PHÚ QUÝ V1"
+Title.Font = Enum.Font.GothamBold
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.TextSize = 13
+Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.BackgroundTransparency = 1
+
+-- NÚT EXIT (TRÊN TÊN)
+local QuickExit = Instance.new("TextButton", Header)
+QuickExit.Size = UDim2.new(0, 45, 0, 28)
+QuickExit.Position = UDim2.new(0.55, -10, 0.5, -14)
+QuickExit.Text = "EXIT"
+QuickExit.Font = Enum.Font.GothamBold
+QuickExit.TextSize = 10
+QuickExit.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+QuickExit.TextColor3 = Color3.fromRGB(255, 255, 255)
+Instance.new("UICorner", QuickExit).CornerRadius = UDim.new(0, 6)
+QuickExit.MouseButton1Click:Connect(function() game:Shutdown() end)
+
+-- NÚT CHUYỂN TRANG >> (SIÊU TO)
+local NextTab = Instance.new("TextButton", Header)
+NextTab.Size = UDim2.new(0, 55, 0, 45)
+NextTab.Position = UDim2.new(1, -55, 0, 0)
+NextTab.Text = ">>"
+NextTab.Font = Enum.Font.GothamBold
+NextTab.TextSize = 26
+NextTab.TextColor3 = Color3.fromRGB(0, 255, 255)
+NextTab.BackgroundTransparency = 1
+
+-- NỘI DUNG TAB
+local Tab1 = Instance.new("Frame", Main)
+Tab1.Size = UDim2.new(1, 0, 1, -50)
+Tab1.Position = UDim2.new(0, 0, 0, 50)
+Tab1.BackgroundTransparency = 1
+
+local Tab2 = Instance.new("Frame", Main)
+Tab2.Size = UDim2.new(1, 0, 1, -50)
+Tab2.Position = UDim2.new(0, 0, 0, 50)
+Tab2.BackgroundTransparency = 1
+Tab2.Visible = false
+
+local function CreateBtn(text, color, y, parent)
+    local b = Instance.new("TextButton", parent)
+    b.Size = UDim2.new(0.92, 0, 0, 32)
+    b.Position = UDim2.new(0.04, 0, 0, y)
+    b.BackgroundColor3 = color
+    b.Font = Enum.Font.GothamBold
+    b.TextColor3 = Color3.fromRGB(255, 255, 255)
+    b.TextSize = 10
+    Instance.new("UICorner", b).CornerRadius = UDim.new(0, 8)
+    return b
+end
+
+-- TRANG 1
+local SpeedBtn = CreateBtn("", Color3.fromRGB(45, 45, 45), 0, Tab1)
+local NoclipBtn = CreateBtn("", Color3.fromRGB(45, 45, 45), 38, Tab1)
+local EspBtn = CreateBtn("", Color3.fromRGB(45, 45, 45), 76, Tab1)
+local ShiftBtn = CreateBtn("", Color3.fromRGB(0, 110, 200), 114, Tab1)
+local LockGuiBtn = CreateBtn("", Color3.fromRGB(200, 100, 0), 152, Tab1)
+
+-- TRANG 2
+local LangBtn = CreateBtn("", Color3.fromRGB(0, 90, 160), 0, Tab2)
+local AddBtn = CreateBtn("", Color3.fromRGB(0, 130, 70), 38, Tab2)
+local ClearBtn = CreateBtn("", Color3.fromRGB(160, 0, 0), 76, Tab2)
+local ResetBtn = CreateBtn("", Color3.fromRGB(110, 110, 0), 114, Tab2)
+
+local TeleLabel = Instance.new("TextLabel", Tab2)
+TeleLabel.Size = UDim2.new(1, 0, 0, 20)
+TeleLabel.Position = UDim2.new(0, 0, 0, 155)
+TeleLabel.Font = Enum.Font.GothamBold
+TeleLabel.TextSize = 9
+TeleLabel.TextColor3 = Color3.fromRGB(0, 255, 255)
+TeleLabel.BackgroundTransparency = 1
+
+local Scroll = Instance.new("ScrollingFrame", Tab2)
+Scroll.Size = UDim2.new(0.92, 0, 0, 70)
+Scroll.Position = UDim2.new(0.04, 0, 0, 178)
+Scroll.BackgroundTransparency = 1
+Scroll.ScrollBarThickness = 0
+Instance.new("UIListLayout", Scroll).Padding = UDim.new(0, 5)
+
+-- LOGIC HỆ THỐNG
+local function UpdateLang()
+    if isVN then
+        SpeedBtn.Text = speedActive and "⚡ TỐC ĐỘ: 100" or "⚡ TỐC ĐỘ: TẮT"
+        NoclipBtn.Text = noclipActive and "🧱 NOCLIP: BẬT" or "🧱 NOCLIP: TẮT"
+        EspBtn.Text = espActive and "👁️ HIỆN NGƯỜI: BẬT" or "👁️ HIỆN NGƯỜI: TẮT"
+        ShiftBtn.Text = shiftLockActive and "🎯 SHIFT LOCK: BẬT" or "🎯 SHIFT LOCK: TẮT"
+        LockGuiBtn.Text = guiLocked and "🔒 KHÓA MENU: BẬT" or "🔓 KHÓA MENU: TẮT"
+        LangBtn.Text = "🌐 NGÔN NGỮ: VIỆT NAM"
+        AddBtn.Text = "📍 LƯU VỊ TRÍ"
+        ClearBtn.Text = "🗑️ XOÁ TẤT CẢ"
+        ResetBtn.Text = "🔄 RESET NHÂN VẬT"
+        TeleLabel.Text = "--- DỊCH CHUYỂN ---"
+    else
+        SpeedBtn.Text = speedActive and "⚡ SPEED: 100" or "⚡ SPEED: OFF"
+        NoclipBtn.Text = noclipActive and "🧱 NOCLIP: ON" or "🧱 NOCLIP: OFF"
+        EspBtn.Text = espActive and "👁️ ESP: ON" or "👁️ ESP: OFF"
+        ShiftBtn.Text = shiftLockActive and "🎯 SHIFT LOCK: ON" or "🎯 SHIFT LOCK: OFF"
+        LockGuiBtn.Text = guiLocked and "🔒 LOCK MENU: ON" or "🔓 LOCK MENU: OFF"
+        LangBtn.Text = "🌐 LANGUAGE: ENGLISH"
+        AddBtn.Text = "📍 SAVE POSITION"
+        ClearBtn.Text = "🗑️ CLEAR ALL"
+        ResetBtn.Text = "🔄 RESET CHARACTER"
+        TeleLabel.Text = "--- TELEPORT ---"
+    end
+    for _, item in pairs(savedPositions) do
+        item.Btn.Text = isVN and "Vị trí " .. item.ID or "Pos " .. item.ID
+    end
+end
+
+NextTab.MouseButton1Click:Connect(function()
+    Tab1.Visible = not Tab1.Visible
+    Tab2.Visible = not Tab2.Visible
+    NextTab.Text = Tab1.Visible and ">>" or "<<"
+end)
+
+LangBtn.MouseButton1Click:Connect(function() isVN = not isVN UpdateLang() end)
+LockGuiBtn.MouseButton1Click:Connect(function() guiLocked = not guiLocked UpdateLang() end)
+SpeedBtn.MouseButton1Click:Connect(function() speedActive = not speedActive Player.Character.Humanoid.WalkSpeed = speedActive and 100 or 16 UpdateLang() end)
+NoclipBtn.MouseButton1Click:Connect(function() noclipActive = not noclipActive UpdateLang() end)
+EspBtn.MouseButton1Click:Connect(function() espActive = not espActive UpdateLang() end)
+ResetBtn.MouseButton1Click:Connect(function() Player.Character:BreakJoints() end)
+ShiftBtn.MouseButton1Click:Connect(function() shiftLockActive = not shiftLockActive UpdateLang() end)
+
+-- NÚT PQ
+local ToggleBtn = Instance.new("TextButton", ScreenGui)
+ToggleBtn.Size = UDim2.new(0, 45, 0, 45)
+ToggleBtn.Position = UDim2.new(0, 10, 0.4, 0)
+ToggleBtn.Text = "PQ"
+ToggleBtn.Font = Enum.Font.GothamBold
+ToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+ToggleBtn.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+ToggleBtn.BackgroundTransparency = 0.3
+Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(1, 0)
+local T_Stroke = Instance.new("UIStroke", ToggleBtn)
+T_Stroke.Thickness = 2.5
+MakeDraggable(ToggleBtn)
+ToggleBtn.MouseButton1Click:Connect(function() Main.Visible = not Main.Visible end)
+
+-- DỊCH CHUYỂN
+AddBtn.MouseButton1Click:Connect(function()
+    local id = teleCount
+    local pos = Player.Character.HumanoidRootPart.CFrame
+    local btn = CreateBtn("", Color3.fromRGB(35, 35, 35), 0, Scroll)
+    btn.MouseButton1Click:Connect(function() Player.Character.HumanoidRootPart.CFrame = pos end)
+    table.insert(savedPositions, {ID = id, Btn = btn})
+    teleCount = teleCount + 1
+    Scroll.CanvasSize = UDim2.new(0, 0, 0, teleCount * 35)
+    UpdateLang()
+end)
+
+ClearBtn.MouseButton1Click:Connect(function()
+    for _, item in pairs(savedPositions) do item.Btn:Destroy() end
+    savedPositions = {} teleCount = 1 UpdateLang()
+end)
+
+-- VÒNG LẶP HỆ THỐNG
+RunService.RenderStepped:Connect(function()
+    if shiftLockActive then
+        UserInputService.MouseBehavior = Enum.MouseBehavior.LockCenter
+        if Player.Character and Player.Character:FindFirstChild("HumanoidRootPart") then
+            local _, y = Camera.CFrame:ToEulerAnglesYXZ()
+            Player.Character.HumanoidRootPart.CFrame = CFrame.new(Player.Character.HumanoidRootPart.Position) * CFrame.Angles(0, y, 0)
+        end
+    end
+end)
+
+RunService.Stepped:Connect(function()
+    if noclipActive and Player.Character then
+        for _, v in pairs(Player.Character:GetDescendants()) do if v:IsA("BasePart") then v.CanCollide = false end end
+    end
+end)
+
+local function CreateESP(p)
+    local h = Instance.new("Highlight")
+    h.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+    RunService.RenderStepped:Connect(function() if p.Character then h.Parent = p.Character h.Enabled = espActive end end)
+end
+for _, v in pairs(game.Players:GetPlayers()) do if v ~= Player then CreateESP(v) end end
+game.Players.PlayerAdded:Connect(function(v) if v ~= Player then CreateESP(v) end end)
+
+spawn(function()
+    while task.wait() do
+        local c = Color3.fromHSV(tick() % 5 / 5, 0.8, 1)
+        T_Stroke.Color, M_Stroke.Color, Title.TextColor3 = c, c, c
+    end
+end)
+
+UpdateLang()
