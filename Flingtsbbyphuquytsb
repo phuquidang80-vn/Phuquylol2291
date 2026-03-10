@@ -1,0 +1,185 @@
+--[[ 
+    Project: PHUQUY FLING TSB - V1 (EXPERIENCE LANG)
+    Tính năng: Tự dịch theo ngôn ngữ máy, Teleport, Xuyên thấu, Siêu Fling.
+]]
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+local Locale = game:GetService("LocalizationService").RobloxLocaleId
+
+-- HỆ THỐNG TỰ DỊCH THEO TRẢI NGHIỆM (VI / EN)
+local isVN = Locale:find("vi") -- Kiểm tra nếu có chữ 'vi' trong mã ngôn ngữ
+local TXT = {
+    Title = "PhuQuy fling tsb",
+    Input = isVN and "Tên đối thủ..." or "Target Name...",
+    TP = isVN and "DỊCH CHUYỂN" or "TELEPORT",
+    FlingOn = isVN and "BẬT FLING" or "ENABLE FLING",
+    FlingOff = isVN and "ĐANG NÉM..." or "FLINGING...",
+    Reset = isVN and "ĐẶT LẠI" or "RESET",
+    Ready = isVN and "Sẵn sàng!" or "Ready!",
+    NoFound = isVN and "Không tìm thấy!" or "Player Not Found!"
+}
+
+-- Xóa menu cũ
+if game.CoreGui:FindFirstChild("PQ_Experience_V1") then 
+    game.CoreGui.PQ_Experience_V1:Destroy() 
+end
+
+local ScreenGui = Instance.new("ScreenGui", game.CoreGui)
+ScreenGui.Name = "PQ_Experience_V1"
+
+local MainFrame = Instance.new("Frame", ScreenGui)
+MainFrame.Size = UDim2.new(0, 160, 0, 240)
+MainFrame.Position = UDim2.new(0.5, -80, 0.5, -120)
+MainFrame.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
+MainFrame.BorderSizePixel = 2
+MainFrame.BorderColor3 = Color3.fromRGB(255, 0, 0)
+MainFrame.Active = true
+MainFrame.Draggable = true
+
+-- THANH TIÊU ĐỀ
+local TitleBar = Instance.new("Frame", MainFrame)
+TitleBar.Size = UDim2.new(1, 0, 0, 22)
+TitleBar.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+TitleBar.BorderSizePixel = 0
+
+local TitleLabel = Instance.new("TextLabel", TitleBar)
+TitleLabel.Size = UDim2.new(1, 0, 1, 0)
+TitleLabel.Text = TXT.Title
+TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+TitleLabel.Font = Enum.Font.SourceSansBold
+TitleLabel.TextSize = 13
+TitleLabel.BackgroundTransparency = 1
+
+-- Ô NHẬP TÊN
+local NameInput = Instance.new("TextBox", MainFrame)
+NameInput.Size = UDim2.new(0.9, 0, 0, 28)
+NameInput.Position = UDim2.new(0.05, 0, 0.15, 0)
+NameInput.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+NameInput.PlaceholderText = TXT.Input
+NameInput.Text = ""
+NameInput.TextColor3 = Color3.fromRGB(255, 255, 255)
+NameInput.Font = Enum.Font.SourceSans
+
+local Status = Instance.new("TextLabel", MainFrame)
+Status.Size = UDim2.new(1, 0, 0, 20)
+Status.Position = UDim2.new(0, 0, 0.28, 0)
+Status.Text = TXT.Ready
+Status.TextColor3 = Color3.fromRGB(0, 255, 200)
+Status.BackgroundTransparency = 1
+Status.Font = Enum.Font.SourceSansItalic
+Status.TextSize = 11
+
+-- BIẾN LOGIC
+local _G = { Flinging = false, Target = nil }
+
+local function FindPlr(str)
+    for _, v in pairs(Players:GetPlayers()) do
+        if v ~= LocalPlayer and (v.Name:lower():find(str:lower()) or v.DisplayName:lower():find(str:lower())) then
+            return v
+        end
+    end
+    return nil
+end
+
+-- NÚT TELEPORT
+local TPBtn = Instance.new("TextButton", MainFrame)
+TPBtn.Size = UDim2.new(0.9, 0, 0, 32)
+TPBtn.Position = UDim2.new(0.05, 0, 0.4, 0)
+TPBtn.BackgroundColor3 = Color3.fromRGB(0, 100, 200)
+TPBtn.Text = TXT.TP
+TPBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+TPBtn.Font = Enum.Font.SourceSansBold
+
+TPBtn.MouseButton1Click:Connect(function()
+    local t = FindPlr(NameInput.Text)
+    if t and t.Character and t.Character:FindFirstChild("HumanoidRootPart") then
+        LocalPlayer.Character.HumanoidRootPart.CFrame = t.Character.HumanoidRootPart.CFrame * CFrame.new(0, 0, 1.2)
+        Status.Text = (isVN and "Đã tới: " or "TP to: ") .. t.DisplayName
+    else
+        Status.Text = TXT.NoFound
+    end
+end)
+
+-- NÚT FLING (TỰ ĐỘNG XUYÊN THẤU)
+local FlingBtn = Instance.new("TextButton", MainFrame)
+FlingBtn.Size = UDim2.new(0.9, 0, 0, 32)
+FlingBtn.Position = UDim2.new(0.05, 0, 0.58, 0)
+FlingBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+FlingBtn.Text = TXT.FlingOn
+FlingBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+FlingBtn.Font = Enum.Font.SourceSansBold
+
+FlingBtn.MouseButton1Click:Connect(function()
+    local t = FindPlr(NameInput.Text)
+    if t then
+        _G.Target = t
+        _G.Flinging = not _G.Flinging
+        FlingBtn.Text = _G.Flinging and TXT.FlingOff or TXT.FlingOn
+        FlingBtn.BackgroundColor3 = _G.Flinging and Color3.fromRGB(150, 0, 0) or Color3.fromRGB(45, 45, 45)
+    else
+        Status.Text = TXT.NoFound
+    end
+end)
+
+-- NÚT RESET
+local ResetBtn = Instance.new("TextButton", MainFrame)
+ResetBtn.Size = UDim2.new(0.9, 0, 0, 32)
+ResetBtn.Position = UDim2.new(0.05, 0, 0.78, 0)
+ResetBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+ResetBtn.Text = TXT.Reset
+ResetBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+ResetBtn.Font = Enum.Font.SourceSansBold
+
+ResetBtn.MouseButton1Click:Connect(function()
+    _G.Flinging = false
+    _G.Target = nil
+    FlingBtn.Text = TXT.FlingOn
+    FlingBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+    Status.Text = TXT.Ready
+    pcall(function()
+        local hrp = LocalPlayer.Character.HumanoidRootPart
+        hrp.Velocity = Vector3.new(0,0,0)
+        hrp.RotVelocity = Vector3.new(0,0,0)
+        for _, p in pairs(LocalPlayer.Character:GetChildren()) do
+            if p:IsA("BasePart") then p.CanCollide = true end
+        end
+    end)
+end)
+
+-- NÚT MỞ NHỎ PQ
+local OpenBtn = Instance.new("TextButton", ScreenGui)
+OpenBtn.Size = UDim2.new(0, 35, 0, 35)
+OpenBtn.Position = UDim2.new(0, 10, 0.5, -17)
+OpenBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+OpenBtn.BorderColor3 = Color3.fromRGB(255, 0, 0)
+OpenBtn.Text = "PQ"
+OpenBtn.TextColor3 = Color3.fromRGB(255, 0, 0)
+OpenBtn.Font = Enum.Font.SourceSansBold
+Instance.new("UICorner", OpenBtn)
+OpenBtn.MouseButton1Click:Connect(function() MainFrame.Visible = not MainFrame.Visible end)
+
+-- VẬT LÝ FLING MAX CẤP ĐỘ 1 (VISIBLE & POWERFUL)
+local angle = 0
+RunService.Heartbeat:Connect(function(dt)
+    if _G.Flinging and _G.Target and _G.Target.Character then
+        pcall(function()
+            local myChar = LocalPlayer.Character
+            local myHrp = myChar.HumanoidRootPart
+            local eHrp = _G.Target.Character:FindFirstChild("HumanoidRootPart")
+            if eHrp then
+                angle = angle + dt * 110
+                -- Orbit cực sát 0.1 stud để ném văng 100%
+                local pos = eHrp.Position + Vector3.new(math.cos(angle)*0.1, 0, math.sin(angle)*0.1)
+                myHrp.Velocity = Vector3.new(450000, 450000, 450000)
+                myHrp.RotVelocity = Vector3.new(450000, 450000, 450000)
+                myHrp.CFrame = CFrame.new(pos, eHrp.Position)
+                -- Tự động Noclip (Xuyên thấu) để ném mượt hơn
+                for _, part in pairs(myChar:GetChildren()) do
+                    if part:IsA("BasePart") then part.CanCollide = false end
+                end
+            end
+        end)
+    end
+end)
