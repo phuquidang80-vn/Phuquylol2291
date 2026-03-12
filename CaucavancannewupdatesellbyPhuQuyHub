@@ -1,0 +1,139 @@
+--[[ 
+    Phú Quý câu cá vận cân (teleport sell update!)
+    Tính năng: Teleport 5 Đảo & Nút "sell cá" đến NPC chỉ định.
+    Giao diện: Cổ điển, Xuyên thấu, Kéo thả mượt mà cho Mobile.
+]]
+
+local ScreenGui = Instance.new("ScreenGui")
+local MainFrame = Instance.new("Frame")
+local Title = Instance.new("TextLabel")
+local StatusLabel = Instance.new("TextLabel")
+local ToggleBtn = Instance.new("TextButton")
+
+-- Cấu hình hệ thống GUI
+ScreenGui.Parent = game.CoreGui
+ScreenGui.Name = "PhuQuy_CauCaVanCan"
+ScreenGui.ResetOnSpawn = false
+
+-- Nút HIỆN MENU
+ToggleBtn.Name = "ToggleBtn"
+ToggleBtn.Parent = ScreenGui
+ToggleBtn.Size = UDim2.new(0, 80, 0, 30)
+ToggleBtn.Position = UDim2.new(0.5, -40, 0, 10)
+ToggleBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+ToggleBtn.BackgroundTransparency = 0.4
+ToggleBtn.Text = "HIỆN MENU"
+ToggleBtn.TextColor3 = Color3.new(1, 1, 1)
+ToggleBtn.Font = Enum.Font.SourceSansBold
+ToggleBtn.Visible = false 
+Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(0, 6)
+
+-- Khung Menu Chính
+MainFrame.Name = "Main"
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(5, 5, 5)
+MainFrame.BackgroundTransparency = 0.35
+MainFrame.BorderSizePixel = 1
+MainFrame.BorderColor3 = Color3.fromRGB(255, 255, 255)
+MainFrame.Position = UDim2.new(0.5, -90, 0.2, 0)
+MainFrame.Size = UDim2.new(0, 180, 0, 340) 
+MainFrame.Active = true
+
+-- Tiêu đề (Đã đổi tên theo yêu cầu)
+Title.Parent = MainFrame
+Title.Size = UDim2.new(1, 0, 0, 40)
+Title.Text = "Phú Quý câu cá vận cân"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.BackgroundTransparency = 1
+Title.Font = Enum.Font.SourceSansBold
+Title.TextSize = 12
+
+-- Hàm tạo nút chuẩn
+local function CreateBtn(text, pos, color)
+    local btn = Instance.new("TextButton")
+    btn.Parent = MainFrame
+    btn.Position = pos
+    btn.Size = UDim2.new(0.85, 0, 0, 28)
+    btn.BackgroundColor3 = color or Color3.fromRGB(255, 255, 255)
+    btn.BackgroundTransparency = 0.85
+    btn.Text = text
+    btn.TextColor3 = Color3.new(1, 1, 1)
+    btn.Font = Enum.Font.SourceSansBold
+    btn.TextSize = 11
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 4)
+    return btn
+end
+
+-- Danh sách nút Teleport Đảo
+local Btn1 = CreateBtn("Teleport Đảo 1", UDim2.new(0.075, 0, 0.13, 0))
+local Btn2 = CreateBtn("Teleport Đảo 2", UDim2.new(0.075, 0, 0.23, 0))
+local Btn3 = CreateBtn("Teleport Đảo 3", UDim2.new(0.075, 0, 0.33, 0))
+local Btn4 = CreateBtn("Teleport Đảo 4", UDim2.new(0.075, 0, 0.43, 0))
+local Btn5 = CreateBtn("Teleport Đảo 5", UDim2.new(0.075, 0, 0.53, 0))
+
+-- Nút Teleport số 6: sell cá (Vị trí mới tại NPCs[12])
+local BtnSellPos = CreateBtn("sell cá", UDim2.new(0.075, 0, 0.65, 0), Color3.fromRGB(0, 255, 120))
+
+-- Status
+StatusLabel.Parent = MainFrame
+StatusLabel.Position = UDim2.new(0, 0, 0.78, 0)
+StatusLabel.Size = UDim2.new(1, 0, 0, 20)
+StatusLabel.Text = "Sẵn sàng"
+StatusLabel.TextColor3 = Color3.fromRGB(0, 255, 150)
+StatusLabel.BackgroundTransparency = 1
+StatusLabel.TextSize = 10
+
+local HideBtn = CreateBtn("[ NHẤN ĐỂ ẨN MENU ]", UDim2.new(0, 0, 0.88, 0))
+HideBtn.Size = UDim2.new(1, 0, 0, 25)
+HideBtn.BackgroundTransparency = 1
+
+-----------------------------------------------------------
+-- LOGIC TELEPORT
+-----------------------------------------------------------
+
+local lp = game.Players.LocalPlayer
+local function Go(p, n)
+    if p then
+        lp.Character.HumanoidRootPart.CFrame = p.CFrame + Vector3.new(0, 3, 0)
+        StatusLabel.Text = "Đã tới: " .. n
+    else
+        StatusLabel.Text = "Lỗi: Không tìm thấy mục tiêu!"
+    end
+end
+
+-- Logic nút "sell cá"
+BtnSellPos.MouseButton1Click:Connect(function()
+    pcall(function()
+        local npc = workspace.NPCs:GetChildren()[12]
+        local sellPart = npc:FindFirstChild("Left Leg")
+        Go(sellPart, "Khu vực sell cá")
+    end)
+end)
+
+-- Teleport Đảo
+Btn1.MouseButton1Click:Connect(function() pcall(function() Go(workspace.Map.dao1.Folder:GetChildren()[12], "Đảo 1") end) end)
+Btn2.MouseButton1Click:Connect(function() pcall(function() Go(workspace.Map:GetChildren()[6]:GetChildren()[5]:GetChildren()[176], "Đảo 2") end) end)
+Btn3.MouseButton1Click:Connect(function() pcall(function() Go(workspace.Map:GetChildren()[6].Model:GetChildren()[240], "Đảo 3") end) end)
+Btn4.MouseButton1Click:Connect(function() pcall(function() Go(workspace.Map.dao4:GetChildren()[149], "Đảo 4") end) end)
+Btn5.MouseButton1Click:Connect(function() pcall(function() Go(workspace.Dao5:GetChildren()[231], "Đảo 5") end) end)
+
+-----------------------------------------------------------
+-- KÉO THẢ MOBILE
+-----------------------------------------------------------
+local UIS = game:GetService("UserInputService")
+local dragInput, dragStart, startPos
+MainFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragStart = input.Position startPos = MainFrame.Position
+        input.Changed:Connect(function() if input.UserInputState == Enum.UserInputState.End then dragStart = nil end end)
+    end
+end)
+UIS.InputChanged:Connect(function(input)
+    if (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) and dragStart then
+        local delta = input.Position - dragStart
+        MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+
+HideBtn.MouseButton1Click:Connect(function() MainFrame.Visible = false ToggleBtn.Visible = true end)
+ToggleBtn.MouseButton1Click:Connect(function() MainFrame.Visible = true ToggleBtn.Visible = false end)
