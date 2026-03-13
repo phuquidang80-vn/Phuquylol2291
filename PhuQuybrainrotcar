@@ -1,0 +1,66 @@
+-- Script Name: Phú Quý brainrot
+-- Made by : https://v3rmillion.net/member.php?action=profile&uid=1642742
+
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/bloodball/-back-ups-for-libs/main/lime"))()
+
+if not Library then return end
+
+-- Khởi tạo Menu chính thức
+local w = Library:Window("Phú Quý brainrot")
+
+--- SECTION: TELEPORT (Dịch chuyển) ---
+
+w:Button("TP về", function()
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    local root = character:FindFirstChild("HumanoidRootPart")
+    
+    -- Kiểm tra Map an toàn
+    local targetFolder = workspace:FindFirstChild("Map") 
+                         and workspace.Map:FindFirstChild("Levels") 
+                         and workspace.Map.Levels:FindFirstChild("FirstLevel [Nothing Spawns]")
+
+    if targetFolder and root then
+        local posPart = targetFolder:FindFirstChildWhichIsA("BasePart", true)
+        if posPart then 
+            root.CFrame = posPart.CFrame + Vector3.new(0, 5, 0)
+        else 
+            root.CFrame = targetFolder:GetPivot() + Vector3.new(0, 5, 0) 
+        end
+    end
+end)
+
+w:Button("tp Celestial", function()
+    local item = workspace:FindFirstChild("ItemSpawners") and workspace.ItemSpawners:FindFirstChild("Celestial")
+    if item and game.Players.LocalPlayer.Character then
+        game.Players.LocalPlayer.Character:PivotTo(item:GetPivot() * CFrame.new(0, 3, 0))
+    end
+end)
+
+w:Button("TP mythic", function()
+    local item = workspace:FindFirstChild("ItemSpawners") and workspace.ItemSpawners:FindFirstChild("Mythical")
+    if item and game.Players.LocalPlayer.Character then
+        game.Players.LocalPlayer.Character:PivotTo(item:GetPivot() * CFrame.new(0, 3, 0))
+    end
+end)
+
+w:Button("tp huyền thoại", function()
+    local item = workspace:FindFirstChild("ItemSpawners") and workspace.ItemSpawners:FindFirstChild("Legendary")
+    if item and game.Players.LocalPlayer.Character then
+        game.Players.LocalPlayer.Character:PivotTo(item:GetPivot() * CFrame.new(0, 3, 0))
+    end
+end)
+
+--- SECTION: UTILS (Công cụ xóa) ---
+
+w:Button("Xoá CarSpawn", function()
+    local carSpawn = workspace:FindFirstChild("CarSpawn")
+    if carSpawn then
+        carSpawn:Destroy()
+    end
+end)
+
+-- Nút Toggle để bạn có thể thêm tính năng khác sau này
+w:Toggle("Trạng thái Script", function(v)
+   print("Script đang chạy: ", v)
+end)
