@@ -1,0 +1,208 @@
+-- ==========================================
+-- SCRIPT: PHÚ QUÝ SÁT THỦ (OFFICIAL)
+-- MÔ TẢ: AUTO KILL, AUTO EQUIP, SERVER HOP
+-- ==========================================
+
+local Players = game:GetService("Players")
+local TeleportService = game:GetService("TeleportService")
+local VirtualUser = game:GetService("VirtualUser")
+local lp = Players.LocalPlayer
+
+-- Xóa menu cũ để tránh trùng lặp
+if game.CoreGui:FindFirstChild("PhuQuy_Official_Assassin") then
+    game.CoreGui.PhuQuy_Official_Assassin:Destroy()
+end
+
+local ScreenGui = Instance.new("ScreenGui")
+local MainFrame = Instance.new("Frame")
+local TopBar = Instance.new("Frame")
+local Title = Instance.new("TextLabel")
+local CloseBtn = Instance.new("TextButton")
+local MinimizeBtn = Instance.new("TextButton")
+local TabHolder = Instance.new("Frame")
+local ContentHolder = Instance.new("Frame")
+local UICorner = Instance.new("UICorner")
+
+ScreenGui.Parent = game.CoreGui
+ScreenGui.Name = "PhuQuy_Official_Assassin"
+
+-- Thiết kế Giao diện Xuyên thấu siêu đẹp
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+MainFrame.BackgroundTransparency = 0.4
+MainFrame.Position = UDim2.new(0.5, -150, 0.5, -100)
+MainFrame.Size = UDim2.new(0, 310, 0, 210)
+MainFrame.ClipsDescendants = true
+MainFrame.Active = true
+MainFrame.Draggable = true 
+UICorner:Clone().Parent = MainFrame
+
+TopBar.Parent = MainFrame
+TopBar.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+TopBar.BackgroundTransparency = 0.2
+TopBar.Size = UDim2.new(1, 0, 0, 35)
+UICorner:Clone().Parent = TopBar
+
+Title.Parent = TopBar
+Title.Text = " ⚔️ PHÚ QUÝ SÁT THỦ 🌑"
+Title.TextColor3 = Color3.new(1, 1, 1)
+Title.Size = UDim2.new(1, -70, 1, 0)
+Title.Position = UDim2.new(0, 10, 0, 0)
+Title.BackgroundTransparency = 1
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 14
+
+-- Nút Điều Khiển (X, -)
+local function ControlStyle(btn, text, pos, color)
+    btn.Parent = TopBar
+    btn.Text = text
+    btn.Position = pos
+    btn.Size = UDim2.new(0, 25, 0, 25)
+    btn.TextColor3 = color
+    btn.BackgroundTransparency = 0.8
+    btn.BackgroundColor3 = Color3.new(1,1,1)
+    UICorner:Clone().Parent = btn
+end
+ControlStyle(CloseBtn, "✕", UDim2.new(1, -30, 0, 5), Color3.new(1, 0.2, 0.2))
+ControlStyle(MinimizeBtn, "−", UDim2.new(1, -60, 0, 5), Color3.new(1, 1, 1))
+
+-- Hệ thống Tab
+TabHolder.Parent = MainFrame
+TabHolder.Position = UDim2.new(0, 5, 0, 45)
+TabHolder.Size = UDim2.new(0, 85, 1, -55)
+TabHolder.BackgroundTransparency = 1
+Instance.new("UIListLayout", TabHolder).Padding = UDim.new(0, 5)
+
+ContentHolder.Parent = MainFrame
+ContentHolder.Position = UDim2.new(0, 95, 0, 45)
+ContentHolder.Size = UDim2.new(1, -105, 1, -55)
+ContentHolder.BackgroundTransparency = 1
+
+local function CreateTab(name, isFirst)
+    local btn = Instance.new("TextButton")
+    btn.Parent = TabHolder
+    btn.Size = UDim2.new(1, 0, 0, 35)
+    btn.Text = name
+    btn.BackgroundColor3 = Color3.new(1,1,1)
+    btn.BackgroundTransparency = 0.9
+    btn.TextColor3 = Color3.new(1,1,1)
+    btn.Font = Enum.Font.GothamSemibold
+    UICorner:Clone().Parent = btn
+    
+    local page = Instance.new("ScrollingFrame")
+    page.Parent = ContentHolder
+    page.Size = UDim2.new(1, 0, 1, 0)
+    page.Visible = isFirst
+    page.BackgroundTransparency = 1
+    page.ScrollBarThickness = 0
+    Instance.new("UIListLayout", page).Padding = UDim.new(0, 5)
+    
+    btn.MouseButton1Click:Connect(function()
+        for _, v in pairs(ContentHolder:GetChildren()) do if v:IsA("ScrollingFrame") then v.Visible = false end end
+        page.Visible = true
+    end)
+    return page
+end
+
+local MainTab = CreateTab("TRẬN", true)
+local ServerTab = CreateTab("MÁY CHỦ", false)
+
+-- LOGIC HỖ TRỢ CHIẾN ĐẤU
+local function EquipWeapon()
+    local tool = lp.Backpack:FindFirstChildOfClass("Tool")
+    if tool then lp.Character.Humanoid:EquipTool(tool) end
+end
+
+-- 1. TÍNH NĂNG AUTO KILL (Bản Chính Thức)
+local KillLoopActive = false
+local KillBtn = Instance.new("TextButton")
+KillBtn.Parent = MainTab
+KillBtn.Size = UDim2.new(1, 0, 0, 40)
+KillBtn.Text = "BẬT TRUY SÁT"
+KillBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+KillBtn.BackgroundTransparency = 0.5
+KillBtn.TextColor3 = Color3.new(1, 1, 1)
+KillBtn.Font = Enum.Font.GothamBold
+UICorner:Clone().Parent = KillBtn
+
+KillBtn.MouseButton1Click:Connect(function()
+    KillLoopActive = not KillLoopActive
+    KillBtn.Text = KillLoopActive and "ĐANG TRUY SÁT..." or "BẬT TRUY SÁT"
+    KillBtn.TextColor3 = KillLoopActive and Color3.new(1, 0.2, 0.2) or Color3.new(1, 1, 1)
+    
+    task.spawn(function()
+        while KillLoopActive do
+            pcall(function()
+                for _, target in pairs(Players:GetPlayers()) do
+                    if not KillLoopActive then break end
+                    -- Kiểm tra mục tiêu hợp lệ (trong trận và còn sống)
+                    if target ~= lp and target.Character and target.Character:FindFirstChild("Humanoid") and target.Character.Humanoid.Health > 0 then
+                        while KillLoopActive and target.Character and target.Character.Humanoid.Health > 0 do
+                            local hrp = lp.Character:FindFirstChild("HumanoidRootPart")
+                            local targetHrp = target.Character:FindFirstChild("HumanoidRootPart")
+                            if hrp and targetHrp then
+                                EquipWeapon() -- Tự lấy vũ khí
+                                -- TP ra sau lưng đối thủ
+                                hrp.CFrame = targetHrp.CFrame * CFrame.new(0, 0, 3)
+                                -- Chém bằng VirtualUser + Activate
+                                local tool = lp.Character:FindFirstChildOfClass("Tool")
+                                if tool then tool:Activate() end
+                                VirtualUser:Button1Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+                            end
+                            task.wait(0.06) -- Tốc độ tối ưu cho mobile
+                        end
+                    end
+                end
+            end)
+            task.wait(0.2)
+        end
+    end)
+end)
+
+-- 2. TÍNH NĂNG SERVER (Hộp Server & Rejoin)
+local function AddActionBtn(page, text, color, callback)
+    local b = Instance.new("TextButton")
+    b.Parent = page
+    b.Size = UDim2.new(1, 0, 0, 35)
+    b.Text = text
+    b.BackgroundColor3 = color
+    b.BackgroundTransparency = 0.6
+    b.TextColor3 = Color3.new(1,1,1)
+    b.Font = Enum.Font.GothamSemibold
+    UICorner:Clone().Parent = b
+    b.MouseButton1Click:Connect(callback)
+end
+
+AddActionBtn(ServerTab, "SANG SERVER MỚI", Color3.fromRGB(0, 120, 255), function()
+    local Http = game:GetService("HttpService")
+    local Api = "https://games.roblox.com/v1/games/"..game.PlaceId.."/servers/Public?sortOrder=Asc&limit=100"
+    local Body = Http:JSONDecode(game:HttpGet(Api))
+    for _, v in pairs(Body.data) do
+        if v.playing < v.maxPlayers and v.id ~= game.JobId then
+            TeleportService:TeleportToPlaceInstance(game.PlaceId, v.id, lp)
+            break
+        end
+    end
+end)
+
+AddActionBtn(ServerTab, "VÀO LẠI SERVER NÀY", Color3.fromRGB(200, 200, 200), function() 
+    TeleportService:Teleport(game.PlaceId, lp) 
+end)
+
+-- Hiệu ứng Tiêu đề RGB
+task.spawn(function()
+    while task.wait() do
+        Title.TextColor3 = Color3.fromHSV(tick() % 5 / 5, 0.8, 1)
+    end
+end)
+
+-- Tính năng thu nhỏ
+local isMin = false
+MinimizeBtn.MouseButton1Click:Connect(function()
+    isMin = not isMin
+    TabHolder.Visible, ContentHolder.Visible = not isMin, not isMin
+    MainFrame:TweenSize(isMin and UDim2.new(0, 310, 0, 35) or UDim2.new(0, 310, 0, 210), "Out", "Quart", 0.3, true)
+    MinimizeBtn.Text = isMin and "+" or "−"
+end)
+
+CloseBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
