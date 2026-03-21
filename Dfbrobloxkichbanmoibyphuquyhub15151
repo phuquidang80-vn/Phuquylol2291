@@ -1,0 +1,149 @@
+local CoreGui = game:GetService("CoreGui")
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local lp = Players.LocalPlayer
+
+-- 1. Dọn dẹp bản cũ
+if CoreGui:FindFirstChild("PhuQuy_Ultimate_Hub") then
+    CoreGui:FindFirstChild("PhuQuy_Ultimate_Hub"):Destroy()
+end
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "PhuQuy_Ultimate_Hub"
+ScreenGui.Parent = CoreGui
+ScreenGui.ResetOnSpawn = false
+
+-- 2. NÚT ẨN/HIỆN "PQ"
+local ToggleBtn = Instance.new("TextButton")
+ToggleBtn.Size = UDim2.new(0, 32, 0, 32)
+ToggleBtn.Position = UDim2.new(0, 10, 0.5, -16)
+ToggleBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+ToggleBtn.BackgroundTransparency = 0.4
+ToggleBtn.Text = "PQ"
+ToggleBtn.TextSize = 8
+ToggleBtn.Font = Enum.Font.GothamBold
+ToggleBtn.TextColor3 = Color3.fromRGB(0, 255, 127)
+ToggleBtn.Parent = ScreenGui
+Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(1, 0)
+ToggleBtn.Draggable = true
+
+-- 3. GIAO DIỆN CHÍNH
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, 140, 0, 200) 
+MainFrame.Position = UDim2.new(0.5, -70, 0.2, 0)
+MainFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+MainFrame.BackgroundTransparency = 0.5
+MainFrame.Active = true
+MainFrame.Draggable = true 
+MainFrame.Visible = true
+MainFrame.Parent = ScreenGui
+
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 8)
+UICorner.Parent = MainFrame
+
+local UIStroke = Instance.new("UIStroke")
+UIStroke.Thickness = 1
+UIStroke.Parent = MainFrame
+task.spawn(function()
+    while true do
+        local hue = tick() % 8 / 8
+        UIStroke.Color = Color3.fromHSV(hue, 0.8, 1)
+        task.wait()
+    end
+end)
+
+ToggleBtn.MouseButton1Click:Connect(function()
+    MainFrame.Visible = not MainFrame.Visible
+end)
+
+-- 4. TIÊU ĐỀ
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, 0, 0, 28)
+Title.Text = "PHU QUY HUB"
+Title.TextSize = 8
+Title.TextColor3 = Color3.new(1, 1, 1)
+Title.Font = Enum.Font.GothamBold
+Title.BackgroundTransparency = 1
+Title.Parent = MainFrame
+
+-- HÀM TẠO NÚT CỠ CHỮ NHỎ
+local function createMiniBtn(text, pos, color)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(0.85, 0, 0, 24)
+    btn.Position = pos
+    btn.Text = text
+    btn.TextSize = 7.5
+    btn.BackgroundColor3 = color or Color3.fromRGB(45, 45, 45)
+    btn.TextColor3 = Color3.new(1, 1, 1)
+    btn.Font = Enum.Font.GothamBold
+    btn.Parent = MainFrame
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 4)
+    return btn
+end
+
+-- 5. DANH SÁCH NÚT
+local Btn1 = createMiniBtn("📍 TP.OG Area", UDim2.new(0.075, 0, 0.18, 0))
+local Btn5 = createMiniBtn("🌟 TP.Secret Area", UDim2.new(0.075, 0, 0.34, 0), Color3.fromRGB(0, 90, 160))
+local Btn2 = createMiniBtn("🏠 TP. Base", UDim2.new(0.075, 0, 0.50, 0))
+local Btn3 = createMiniBtn("☁️ Float (Lock Y)", UDim2.new(0.075, 0, 0.66, 0), Color3.fromRGB(110, 35, 35))
+local Btn4 = createMiniBtn("🛡️ Auto Slap", UDim2.new(0.075, 0, 0.82, 0), Color3.fromRGB(35, 35, 110))
+
+-- LOGIC CHỨC NĂNG
+local function safeTP(target)
+    local char = lp.Character
+    if char and char:FindFirstChild("HumanoidRootPart") and target then
+        char.HumanoidRootPart.CFrame = (target:IsA("Model") and target:GetPivot() or target.CFrame) * CFrame.new(0, 5, 0)
+    end
+end
+
+Btn1.MouseButton1Click:Connect(function()
+    local t = workspace:FindFirstChild("Zones") and workspace.Zones:FindFirstChild("OG Area") and workspace.Zones["OG Area"].Base:FindFirstChild("IsPlatform")
+    safeTP(t)
+end)
+
+Btn5.MouseButton1Click:Connect(function()
+    local t = workspace:FindFirstChild("Zones") and workspace.Zones:FindFirstChild("Secret Area") and workspace.Zones["Secret Area"].Base:FindFirstChild("IsPlatform")
+    safeTP(t)
+end)
+
+Btn2.MouseButton1Click:Connect(function()
+    local c = workspace:FindFirstChild("FreeReward") and workspace.FreeReward:GetChildren()
+    safeTP(c and c[4])
+end)
+
+Btn3.MouseButton1Click:Connect(function()
+    local hrp = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
+    if hrp then
+        hrp.Anchored = not hrp.Anchored
+        Btn3.Text = hrp.Anchored and "☁️ Float: ON" or "☁️ Float: OFF"
+        Btn3.BackgroundColor3 = hrp.Anchored and Color3.fromRGB(0, 110, 0) or Color3.fromRGB(110, 35, 35)
+    end
+end)
+
+local following = false
+local followConn
+Btn4.MouseButton1Click:Connect(function()
+    following = not following
+    if following then
+        Btn4.Text = "🛡️ Anti-Slap: ON"
+        Btn4.BackgroundColor3 = Color3.fromRGB(0, 110, 0)
+        followConn = RunService.Heartbeat:Connect(function()
+            local closest = nil
+            local dist = 100
+            for _, p in pairs(Players:GetPlayers()) do
+                if p ~= lp and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+                    local d = (lp.Character.HumanoidRootPart.Position - p.Character.HumanoidRootPart.Position).Magnitude
+                    if d < dist then dist = d; closest = p end
+                end
+            end
+            if closest and lp.Character:FindFirstChild("HumanoidRootPart") then
+                lp.Character.HumanoidRootPart.CFrame = closest.Character.HumanoidRootPart.CFrame * CFrame.new(0, 4, 5)
+            end
+        end)
+    else
+        Btn4.Text = "🛡️ Anti-Slap: OFF"
+        Btn4.BackgroundColor3 = Color3.fromRGB(35, 35, 110)
+        if followConn then followConn:Disconnect() end
+    end
+end)
