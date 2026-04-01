@@ -1,0 +1,167 @@
+-- [[ PHU QUY BRAINROT CẦU KINH - OFFICIAL VERSION ]] --
+-- Optimizer: Gemini (Adaptive AI)
+-- Device: Delta Executor / Roblox Mobile
+
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local Player = Players.LocalPlayer
+local PlayerGui = Player:WaitForChild("PlayerGui")
+
+-- Xóa phiên bản cũ nếu đang chạy
+if PlayerGui:FindFirstChild("PhuQuyBrainrot_Official") then
+    PlayerGui.PhuQuyBrainrot_Official:Destroy()
+end
+
+-- --- KHỞI TẠO GUI ---
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "PhuQuyBrainrot_Official"
+ScreenGui.Parent = PlayerGui
+ScreenGui.ResetOnSpawn = false
+
+-- Menu Chính
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainFrame"
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+MainFrame.Position = UDim2.new(0.5, -90, 0.4, 0)
+MainFrame.Size = UDim2.new(0, 180, 0, 200)
+MainFrame.Active = true
+MainFrame.BorderSizePixel = 0
+
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 15)
+UICorner.Parent = MainFrame
+
+local UIStroke = Instance.new("UIStroke")
+UIStroke.Thickness = 2.5
+UIStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+UIStroke.Parent = MainFrame
+
+-- Tiêu Đề
+local Title = Instance.new("TextLabel")
+Title.Name = "Title"
+Title.Parent = MainFrame
+Title.Size = UDim2.new(1, 0, 0, 50)
+Title.BackgroundTransparency = 1
+Title.Text = "PHU QUY BRAINROT\nCẦU KINH"
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 14
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+
+-- Hiệu ứng Rainbow (Cầu vồng) cho Tiêu đề và Viền
+RunService.RenderStepped:Connect(function()
+    local hue = tick() % 3 / 3
+    local color = Color3.fromHSV(hue, 0.8, 1)
+    Title.TextColor3 = color
+    UIStroke.Color = color
+end)
+
+-- --- CÁC NÚT BẤM ---
+local function CreateButton(text, pos, color)
+    local btn = Instance.new("TextButton")
+    btn.Parent = MainFrame
+    btn.Size = UDim2.new(0.85, 0, 0, 40)
+    btn.Position = pos
+    btn.BackgroundColor3 = color
+    btn.Text = text
+    btn.Font = Enum.Font.GothamBold
+    btn.TextSize = 13
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.AutoButtonColor = true
+    
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 8)
+    corner.Parent = btn
+    
+    return btn
+end
+
+local UnlockBtn = CreateButton("UNLOCK ALL VIP", UDim2.new(0.075, 0, 0.35, 0), Color3.fromRGB(30, 30, 30))
+local MiniBtn = CreateButton("ẨN MENU", UDim2.new(0.075, 0, 0.65, 0), Color3.fromRGB(180, 0, 0))
+
+-- Nút Thu Nhỏ (PQ)
+local ToggleBtn = Instance.new("TextButton")
+ToggleBtn.Name = "ToggleBtn"
+ToggleBtn.Parent = ScreenGui
+ToggleBtn.Size = UDim2.new(0, 55, 0, 55)
+ToggleBtn.Position = UDim2.new(0.1, 0, 0.1, 0)
+ToggleBtn.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+ToggleBtn.Text = "PQ"
+ToggleBtn.Font = Enum.Font.GothamBold
+ToggleBtn.TextSize = 18
+ToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+ToggleBtn.Visible = false
+
+local ToggleCorner = Instance.new("UICorner")
+ToggleCorner.CornerRadius = UDim.new(1, 0)
+ToggleCorner.Parent = ToggleBtn
+
+local ToggleStroke = Instance.new("UIStroke")
+ToggleStroke.Thickness = 2
+ToggleStroke.Color = Color3.fromRGB(255, 255, 255)
+ToggleStroke.Parent = ToggleBtn
+
+-- --- HÀM DI CHUYỂN (DRAG) CHO MOBILE ---
+local dragToggle, dragStart, startPos
+MainFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragToggle = true
+        dragStart = input.Position
+        startPos = MainFrame.Position
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if dragToggle and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        local delta = input.Position - dragStart
+        MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragToggle = false
+    end
+end)
+
+-- --- LOGIC XỬ LÝ VIP ---
+local VIP_ZONES = {
+    "VIP1", "VIP2", "VIP3", "VIP4", "VIP5", "VIP8", "VIP9", "VIP10", "VIP11", "VIP12", "VIP13"
+}
+
+UnlockBtn.MouseButton1Click:Connect(function()
+    for _, name in pairs(VIP_ZONES) do
+        pcall(function()
+            local zone = workspace.Map.Bridge.Tiles[name].Zone
+            if zone then
+                zone.CanCollide = false
+                zone.Transparency = 0.7
+                -- Xóa bỏ cảm biến chạm để tránh bị check VIP
+                local touch = zone:FindFirstChildOfClass("TouchTransmitter")
+                if touch then touch:Destroy() end
+            end
+        end)
+    end
+    UnlockBtn.Text = "SUCCESS!"
+    UnlockBtn.TextColor3 = Color3.fromRGB(0, 255, 150)
+    wait(1.5)
+    UnlockBtn.Text = "UNLOCK ALL VIP"
+    UnlockBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+end)
+
+-- --- XỬ LÝ ẨN/HIỆN ---
+MiniBtn.MouseButton1Click:Connect(function()
+    MainFrame.Visible = false
+    ToggleBtn.Visible = true
+    ToggleBtn.Position = MainFrame.Position
+end)
+
+ToggleBtn.MouseButton1Click:Connect(function()
+    MainFrame.Visible = true
+    ToggleBtn.Visible = false
+    MainFrame.Position = ToggleBtn.Position
+end)
+
+-- Thông báo khi chạy script thành công
+print("Phu Quy Brainrot Official - Loaded Successfully")
